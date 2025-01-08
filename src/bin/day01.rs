@@ -3,6 +3,7 @@
 use std::{collections::HashMap, error::Error};
 
 fn parse_input(input: &str) -> (Vec<i32>, Vec<i32>) {
+    // NOTE: incorrect answer for full input
     input
         .lines()
         .filter(|line| !line.is_empty())
