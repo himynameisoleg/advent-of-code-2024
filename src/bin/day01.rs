@@ -1,6 +1,23 @@
 //! Day 1: Historian Hysteria
 
-fn day1(left: Vec<i32>, right: Vec<i32>) -> i32 {
+use std::{collections::HashMap, error::Error};
+
+fn parse_input(input: &str) -> (Vec<i32>, Vec<i32>) {
+    input
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(|line| {
+            let mut split = line.split_ascii_whitespace();
+            let l = split.next().unwrap().parse::<i32>().unwrap();
+            let r = split.next().unwrap().parse::<i32>().unwrap();
+            (l, r)
+        })
+        .unzip()
+}
+
+fn naive(input: &str) -> i32 {
+    let (left, right) = parse_input(input);
+
     let mut distance = 0;
     for (i, _) in left.iter().enumerate() {
         let diff = left[i] - right[i];
@@ -10,13 +27,53 @@ fn day1(left: Vec<i32>, right: Vec<i32>) -> i32 {
     distance.abs()
 }
 
-fn day1_improved(left: Vec<i32>, right: Vec<i32>) -> i32 {
-    let distance: i32 = left.iter().zip(right.iter()).map(|(l, r)| l - r).sum();
+fn naive2(input: &str) -> i32 {
+    let (left, right) = parse_input(input);
 
+    let mut score = 0;
+
+    for (i, _) in left.iter().enumerate() {
+        let mut multiplier = 0;
+        for (j, _) in right.iter().enumerate() {
+            if right[j] == left[i] {
+                multiplier += 1;
+            }
+        }
+        score += left[i] * multiplier;
+    }
+
+    score
+}
+
+fn naive_ai(input: &str) -> i32 {
+    let (mut left, mut right) = parse_input(input);
+
+    let distance: i32 = left.iter().zip(right.iter()).map(|(l, r)| l - r).sum();
     distance.abs()
 }
 
-fn day1_improved_alt(mut left: Vec<i32>, mut right: Vec<i32>) -> i32 {
+fn naive_ai2(input: &str) -> i32 {
+    let (left, right) = parse_input(input);
+
+    let mut right_counts = HashMap::new();
+
+    for &num in &right {
+        *right_counts.entry(num).or_insert(0) += 1;
+    }
+
+    let mut score = 0;
+    for &num in &left {
+        if let Some(&count) = right_counts.get(&num) {
+            score += num * count;
+        }
+    }
+
+    score
+}
+
+fn community(input: &str) -> i32 {
+    let (mut left, mut right) = parse_input(input);
+
     left.sort();
     right.sort();
 
@@ -26,29 +83,38 @@ fn day1_improved_alt(mut left: Vec<i32>, mut right: Vec<i32>) -> i32 {
         .sum()
 }
 
-fn main() {
-    todo!();
+fn main() -> Result<(), Box<dyn Error>> {
+    advent_of_code_2024::run(naive_ai2, naive2)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    const SAMPLE_INPUT: &str = include_str!("../../sample/day01.txt");
+
     #[test]
-    fn test_day1() {
-        let s = day1(vec![3, 4, 2, 1, 3, 3], vec![4, 3, 5, 3, 9, 3]);
-        assert_eq!(s, 11);
+    fn test_naive() {
+        assert_eq!(11, naive(SAMPLE_INPUT));
     }
 
     #[test]
-    fn test_day1_improved() {
-        let s = day1_improved(vec![3, 4, 2, 1, 3, 3], vec![4, 3, 5, 3, 9, 3]);
-        assert_eq!(s, 11);
+    fn test_naive2() {
+        assert_eq!(31, naive2(SAMPLE_INPUT));
+    }
+
+    #[test]
+    fn test_naive_ai() {
+        assert_eq!(11, naive_ai(SAMPLE_INPUT));
+    }
+
+    #[test]
+    fn test_naive_ai2() {
+        assert_eq!(31, naive_ai2(SAMPLE_INPUT));
     }
 
     #[test]
     fn test_day1_improved_alt() {
-        let s = day1_improved_alt(vec![3, 4, 2, 1, 3, 3], vec![4, 3, 5, 3, 9, 3]);
-        assert_eq!(s, 11);
+        assert_eq!(11, community(SAMPLE_INPUT));
     }
 }

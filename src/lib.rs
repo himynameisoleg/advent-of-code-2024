@@ -1,14 +1,31 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use std::error::Error;
+use std::fmt::Display;
+
+use std::{env, fs, io};
+
+pub fn read_input() -> io::Result<String> {
+    let mut args = env::args();
+    args.next();
+
+    let input_filename = args.next().expect("ARGS: <filename>");
+    fs::read_to_string(&input_filename)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub fn run<T1, T2>(
+    solve1: impl Fn(&str) -> T1,
+    solve2: impl Fn(&str) -> T2,
+) -> Result<(), Box<dyn Error>>
+where
+    T1: Display,
+    T2: Display,
+{
+    let input = read_input()?;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    let solution1 = solve1(&input);
+    println!("Solution 1: {solution1}");
+
+    let solution2 = solve2(&input);
+    println!("Solution 2: {solution2}");
+
+    Ok(())
 }
