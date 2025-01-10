@@ -66,11 +66,6 @@ fn naive(input: &str) -> i32 {
     count
 }
 
-// fn naive2(input: &str) -> i32 {}
-//
-// // Suggested AI improvements to my naive Approach
-// fn naive_ai(input: &str) -> i32 {}
-
 // Solution from community
 fn parse_input(input: &str) -> Vec<Vec<u8>> {
     input
@@ -80,7 +75,7 @@ fn parse_input(input: &str) -> Vec<Vec<u8>> {
         .collect()
 }
 
-fn community(mut input: &str) -> u32 {
+fn community(input: &str) -> u32 {
     let grid = parse_input(input);
 
     (0..grid.len())
@@ -127,10 +122,40 @@ fn count_xmas_starting_at_point(grid: &[Vec<u8>], y: i32, x: i32) -> u32 {
     count
 }
 
-// fn community2(mut input: &str) -> i32 {}
-//
+fn community2(input: &str) -> usize {
+    let grid = parse_input(input);
+
+    (0..grid.len())
+        .map(|y| {
+            (0..grid[0].len())
+                .filter(|&x| check_mas_centered_at_point(&grid, y, x))
+                .count()
+        })
+        .sum()
+}
+
+fn check_mas_centered_at_point(grid: &[Vec<u8>], y: usize, x: usize) -> bool {
+    if grid[y][x] != b'A' || y == 0 || x == 0 || y == grid.len() - 1 || x == grid[0].len() - 1 {
+        return false;
+    }
+
+    let top_left = grid[y - 1][x - 1];
+    if ![b'M', b'S'].contains(&top_left) {
+        return false;
+    }
+
+    let other = if top_left == b'M' { b'S' } else { b'M' };
+
+    if grid[y - 1][x + 1] == top_left {
+        grid[y + 1][x - 1] == other && grid[y + 1][x + 1] == other
+    } else if grid[y + 1][x - 1] == top_left {
+        grid[y - 1][x + 1] == other && grid[y + 1][x + 1] == other
+    } else {
+        false
+    }
+}
 fn main() -> Result<(), Box<dyn Error>> {
-    advent_of_code_2024::run(naive, naive)
+    advent_of_code_2024::run(naive, community2)
 }
 
 #[cfg(test)]
@@ -142,5 +167,10 @@ mod tests {
     #[test]
     fn test_naive() {
         assert_eq!(18, naive(SAMPLE_INPUT));
+    }
+
+    #[test]
+    fn test_community2() {
+        assert_eq!(9, community2(SAMPLE_INPUT));
     }
 }
